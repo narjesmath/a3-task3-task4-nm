@@ -1,0 +1,34 @@
+---
+title: "esm_206_assignment3_task3"
+author: "Narjes Mathlouthi"
+date: "10/29/2021"
+output: 
+  html_document: 
+    toc: yes
+---
+
+
+
+## Overview
+
+This code wrangles then visualizes data of exports of plastic debris by rivers into the sea. The data represents global compilation of plastic debris in the water column across a wide range of river sizes. Plastic debris loads, both microplastic (particles <5 mm) and macroplastic (particles >5 mm) are positively related to the mismanaged plastic waste (MMPW) generated in the river catchments. 
+
+**Citation**: Schmidt C, Krauth T, Wagner S (2017). Export of plastic debris by rivers into the sea. Environ. Sci. Technol. v. 51 (21), p. 12246-12253. 
+
+
+
+## Setup
+
+```{r setup, include= TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+
+
+```{r}
+
+```
+
