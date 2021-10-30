@@ -99,10 +99,12 @@ kable(head(urchin_stats, 4), booktabs = TRUE,col.names =
 
 ```{r, include= TRUE, message = FALSE, warning = FALSE}
 
+urchins_data_clean$date <- as.POSIXct(urchins_data_clean$date, 
+                                      format ="%y/%m/%d")
 
 purple_urchin <- urchins_data_clean %>% 
   filter(species_common_name == "Purple Urchin") %>% 
-  mutate(year_new= year(ymd(date))) %>% 
+  mutate(year_new= year(date)) %>% 
   mutate(site_full = case_when(
     site %in% c("NAPL") ~ "Naples Reef", 
     site %in% c("AQUE") ~ "Arroyo Quemado Reef",
@@ -113,7 +115,7 @@ purple_urchin <- urchins_data_clean %>%
 
 
   purple_urchin_sum <- purple_urchin %>% 
-  group_by(site_full, year_new) %>% 
+  group_by(year_new, site_full) %>% 
      filter(!is.na(year_new)) %>% 
   summarize(count = n())
 
@@ -124,20 +126,21 @@ purple_urchin <- urchins_data_clean %>%
 ```{r, include= TRUE, message = FALSE, warning = FALSE,fig.cap= "Fig2. Purple sea urchin by site and year."}
 
 
+
 ggplot(purple_urchin_sum, aes( x= year_new))+
   geom_line(aes(y= count, color = site_full)) +
-
-  #scale_x_continuous(limits=c(2001,2010) ,"Year") +
+  
+  scale_x_continuous(limits=c(2000,2015),"Year") +
   
   scale_y_continuous(limits = c(100,648),"Count of purple urchin")+
-  facet_wrap(~ site_full, nrow = 2)+
   theme(plot.title = element_text(lineheight=.8, face="bold",
                  size = 20)) +
   labs(title="Purple urchin counts by site and year", color = "Sites", subtitle = "Counts of purple urchins recorded at each site over time for the years included in the study")+
-  theme(legend.position = c(0.70,0.02),
-    legend.justification = c("left", "bottom"),
+  theme(legend.position = c(0.70,1),
+    legend.justification = c("left", "top"),
     legend.box.just = "left",
-    legend.margin = margin(6, 6, 6, 6))
+    legend.margin = margin(6, 6, 6, 6)
+    )
 
 
 
@@ -147,7 +150,7 @@ ggplot(purple_urchin_sum, aes( x= year_new))+
 
 ### Takeways :
 
-Add text below your graph: do you think this graph reflects changes in the purple urchin population? What would you have to take into account to determine whether the changes in counts by year are reflective of actual changes in urchin population? What else could explain the changes in number of purple urchins observed? 
+The graph reflects changes in the purple urchin population across sites and years. There is a noticeable pattern of continuous decrease over time of the count of purple sea urchins in the different sites. It would be interesting to see what factors led to the elevated spikes and at what point the curves started decreasing.You could also potentially analyze the different patterns across other urchin populations and if there are similarities in the behavior of other sea urchin, this could support a hypotheses that the counts per year are reflective of actual changes. Also, there are several different factors that could explain the changes in number of purple urchins observed such as waves, nutrients depletion, etc.
 
 
 ## End Task
