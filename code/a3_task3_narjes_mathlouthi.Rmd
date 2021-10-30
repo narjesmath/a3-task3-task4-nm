@@ -1,5 +1,5 @@
 ---
-title: "esm_206_assignment3_task3"
+title: "TASK 3: Santa Barbara urchins"
 author: "Narjes Mathlouthi"
 date: "10/29/2021"
 output: 
@@ -8,13 +8,12 @@ output:
 ---
 
 
-
 ## Overview
 
-This code wrangles then visualizes data of exports of plastic debris by rivers into the sea. The data represents global compilation of plastic debris in the water column across a wide range of river sizes. Plastic debris loads, both microplastic (particles <5 mm) and macroplastic (particles >5 mm) are positively related to the mismanaged plastic waste (MMPW) generated in the river catchments. 
+This code wrangles, analyzes then visualizes data to explore red and purple urchins recorded by Santa Barbara Coastal Long Term Ecological Research program divers, while practicing version control and project management skills.
 
-**Citation**: Schmidt C, Krauth T, Wagner S (2017). Export of plastic debris by rivers into the sea. Environ. Sci. Technol. v. 51 (21), p. 12246-12253. 
 
+**Citation**: Reed, D. 2020. SBC LTER: Reef: Long-term experiment: Kelp removal: Urchin size frequency distribution ver 20. Environmental Data Initiative. https://doi.org/10.6073/pasta/5a1e9ef03aa47bd2225c0bb98a02a63b. 
 
 
 ## Setup
@@ -24,11 +23,131 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(janitor)
+library(knitr)
+library(kableExtra)
+library(lubridate)
+library(scales)
+
+
+
+```
+
+## Read in and clean urchins data
+
+```{r, include=TRUE, message = FALSE, warning = FALSE}
+
+urchins_data <- read_csv(here('data','urchins.csv'))
+
+urchins_data_clean <- urchins_data %>% 
+  clean_names() %>% 
+  rename (size_cm = size, species_common_name = common_name)
+
+
+```
+
+## Section 1: Size comparisons, purple and red urchins
+
+- In this section we explore the difference between the two species red and purple sea urchin by size (cm).
+
+### Data Vizualization with histograms
+
+```{r, include= TRUE, message = FALSE, warning = FALSE, fig.cap= "Fig1.Distribution of Red & Purple Sea Urchin by Size (cm)."}
+
+ggplot(data = urchins_data_clean, aes(x =size_cm)) +
+  geom_histogram(bins = 10,
+                 breaks = seq(0, 15, by=2), 
+                 alpha = 0.5,
+                 col="red", 
+                 aes(fill=..count..)) +
+  scale_fill_gradient("Count", low="green", high="red") +
+  facet_wrap(~species_common_name) +
+  labs(title="Red & purple sea urchin by size (cm)", x="Size(cm)", y="Count")
+  
 ```
 
 
+### Descriptive Statistics Table
 
-```{r}
+```{r, include= TRUE, message = FALSE, warning = FALSE}
+
+urchin_stats <- urchins_data_clean %>% 
+  group_by(species_common_name) %>% 
+  summarize(
+    urchin_mean = round(mean(size_cm),2),
+    urchin_median = round(median(size_cm),2),
+    urchin_sd = round(sd(size_cm),2),
+    sample_size = n()
+  )
+
+kable(head(urchin_stats, 4), booktabs = TRUE,col.names = 
+        c("Species","Mean","Median","Sd","Sample Size"), align = "lcccr", caption = "Table 1. Sea urchin statistics by size and specie") %>%
+  kable_styling(latex_options = "striped") %>% 
+  kable_styling(font_size = 14,bootstrap_options = "striped",
+                full_width = F, position = "left")
+```
+
+### Takeways :
+
+- Purple urchin sample size is higher than red urchin sample size
+- Both sample sizes' median measurement does not vary significantly from the mean
+- Red urchin histogram resembles a bell shaped curve whereas purple urchin is more  left skewed.
+-
+
+## Section 2. Explore purple urchin counts by site and year
+
+### Data Wrangling
+
+```{r, include= TRUE, message = FALSE, warning = FALSE}
+
+
+purple_urchin <- urchins_data_clean %>% 
+  filter(species_common_name == "Purple Urchin") %>% 
+  mutate(year_new= year(ymd(date))) %>% 
+  mutate(site_full = case_when(
+    site %in% c("NAPL") ~ "Naples Reef", 
+    site %in% c("AQUE") ~ "Arroyo Quemado Reef",
+    site %in% c("CARP")~ "Carpinteria Reef",
+    site %in% c("MOHK") ~ "Mohawk Reef", 
+    site %in% c("IVEE") ~"Isla Vista Reef"))
+
+
+
+  purple_urchin_sum <- purple_urchin %>% 
+  group_by(site_full, year_new) %>% 
+     filter(!is.na(year_new)) %>% 
+  summarize(count = n())
 
 ```
 
+### Data Vizualization
+
+```{r, include= TRUE, message = FALSE, warning = FALSE,fig.cap= "Fig2. Purple sea urchin by site and year."}
+
+
+ggplot(purple_urchin_sum, aes( x= year_new))+
+  geom_line(aes(y= count, color = site_full)) +
+
+  #scale_x_continuous(limits=c(2001,2010) ,"Year") +
+  
+  scale_y_continuous(limits = c(100,648),"Count of purple urchin")+
+  facet_wrap(~ site_full, nrow = 2)+
+  theme(plot.title = element_text(lineheight=.8, face="bold",
+                 size = 20)) +
+  labs(title="Purple urchin counts by site and year", color = "Sites", subtitle = "Counts of purple urchins recorded at each site over time for the years included in the study")+
+  theme(legend.position = c(0.70,0.02),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6))
+
+
+
+
+
+```
+
+### Takeways :
+
+Add text below your graph: do you think this graph reflects changes in the purple urchin population? What would you have to take into account to determine whether the changes in counts by year are reflective of actual changes in urchin population? What else could explain the changes in number of purple urchins observed? 
+
+
+## End Task

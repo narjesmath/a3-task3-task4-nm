@@ -1,0 +1,138 @@
+---
+title: "TASK 4: Naples Reef (2010*) purple urchins"
+author: "Narjes Mathlouthi"
+date: "10/29/2021"
+output: 
+  html_document: 
+    toc: yes
+---
+## Overview
+
+This code wrangles, analyzes then visualizes data to explore red and purple urchins recorded by Santa Barbara Coastal Long Term Ecological Research program divers, while practicing version control and project management skills.
+
+
+**Citation**: Reed, D. 2020. SBC LTER: Reef: Long-term experiment: Kelp removal: Urchin size frequency distribution ver 20. Environmental Data Initiative. https://doi.org/10.6073/pasta/5a1e9ef03aa47bd2225c0bb98a02a63b. 
+
+
+
+## Setup
+
+```{r setup, include= TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+library(lubridate)
+library(plotly)
+library(knitr)
+library(kableExtra)
+```
+
+## Read in urchins data
+
+```{r, include=TRUE, message = FALSE, warning = FALSE}
+
+urchins_data <- read_csv(here('data','urchins.csv')) 
+
+```
+
+
+## Data Wrangling
+
+```{r, include=TRUE, message = FALSE, warning = FALSE}
+urchins_data_clean <- urchins_data %>% 
+  clean_names() %>% 
+  rename (size_cm = size, species_common_name = common_name) 
+
+ 
+```
+
+### Part a : Naples Reef observations for purple urchins observed in 2010
+
+```{r, include= TRUE, message = FALSE, warning = FALSE}
+urchins_data_clean$date <- as.POSIXct(urchins_data_clean$date, 
+                                      format ="%y/%m/%d")
+
+```
+
+
+
+```{r, include= TRUE, message = FALSE, warning = FALSE}
+napl_urchins <- urchins_data_clean %>% 
+   mutate(year_new= year(date)) %>% 
+   filter(species_common_name == "Purple Urchin",
+     site == "NAPL",
+     year_new == "2010") 
+ 
+```
+
+
+### Data Vizualization with Histogram
+
+
+```{r, include= TRUE, message = FALSE, warning = FALSE, fig.cap= "Fig1.Naples Reef observations for purple urchins observed in 2010."}
+
+purple_urchins_histo <- ggplot(data =napl_urchins, aes(x = size_cm)) +
+  geom_histogram(bins = 10,
+                 breaks = seq(0, 15, by=2), 
+                 alpha = 0.5,
+                 aes(fill=..count..)) +
+  scale_fill_gradient("Treatment", low="light blue", high="blue") +
+  facet_wrap(~treatment)+
+  labs(title="Naples Reef observations for purple urchins observed in 2010", x="Size(cm)", y="Count")
+ggplotly(purple_urchins_histo)
+  
+
+
+```
+
+### Takeways
+
+The distribution of both control and treatment is very similar except for a few differences. The annual group has more kelps with bigger sizes compare to the control group that is left intact. 
+
+
+### Data Visualization with qq plot
+
+```{r, include= TRUE, message = FALSE, warning = FALSE,fig.cap= "Fig2.Naples Reef observations for purple urchins observed in 2010."}
+
+purple_urchin_qq <- ggplot(data =napl_urchins, aes(sample = size_cm)) +
+  geom_qq(aes(color = treatment), alpha=0.3, size=0.2)+
+  geom_qq_line()+
+  labs(title="Naples Reef observations for purple urchins observed in 2010.", x="Size(cm)", y="Sample") +
+  facet_wrap(~treatment)
+
+
+
+
+ggplotly(purple_urchin_qq) 
+  
+
+  
+```
+
+### Takeways
+
+- Both control and annual treatment of giant kelp show almost identical patterns.The histogram for both control and annual purple urchins display a similar distribution in 2010. However, there are slight differences that you can notice from both graphs. In the annual histogram(fig1), the count of the annual giant kelp's have larger sizes compare to the control group and in the qqplot (fig2) control follows the straight line closely whereas annual starts moving away from the line as their size increases.
+
+### Descriptive Statistics Table
+
+```{r, include= TRUE, message = FALSE, warning = FALSE}
+
+urchin_stats <- napl_urchins %>% 
+  group_by(treatment) %>% 
+  summarize(
+    mean = round(mean(size_cm),2),
+    median = round(median(size_cm),2),
+    sd = round(sd(size_cm),2),
+    sample_size = n()
+  )
+
+kable(head(urchin_stats, 4), booktabs = TRUE,col.names = 
+        c("Treatment","Mean","Median","Sd","Sample Size"), align = "lcccr", caption = "Table 1. Naples Reef observations for purple urchins observed in 2010") %>%
+  kable_styling(latex_options = "striped") %>% 
+  kable_styling(font_size = 14,bootstrap_options = "striped",
+                full_width = F, position = "left")
+```
+
+## End Task
+
