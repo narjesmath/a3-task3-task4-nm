@@ -92,6 +92,8 @@ kable(head(urchin_stats, 4), booktabs = TRUE,col.names =
 - Both sample sizes' median measurement does not vary significantly from the mean
 - Red urchin histogram resembles a bell shaped curve whereas purple urchin is more  left skewed.
 
+- ((31805-27408)/27408)*100 = 16% change in sample size between purple and red urchin
+
 
 ## Section 2. Explore purple urchin counts by site and year
 
